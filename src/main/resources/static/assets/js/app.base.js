@@ -11,9 +11,10 @@ class AppBase {
 
     static SERVER_CLOUDINARY = "https://res.cloudinary.com";
     static CLOUDINARY_NAME = "/toanphat";
-    static CLOUDINARY_SCALE = "c_limit,w_120,h_100,q_100";
+    static CLOUDINARY_SCALE_120_100 = "c_limit,w_120,h_100,q_100";
+    static CLOUDINARY_SCALE_280_200 = "c_limit,w_280,h_200,q_100";
 
-    static CLOUDINARY_URL = this.SERVER_CLOUDINARY + this.CLOUDINARY_NAME + '/image/upload' + '/' + this.CLOUDINARY_SCALE;
+    static CLOUDINARY_URL = this.SERVER_CLOUDINARY + this.CLOUDINARY_NAME + '/image/upload';
 
     static AlertMessageEn = class {
         static SUCCESS_CREATED = "Successful data generation !";
@@ -155,7 +156,7 @@ class AppBase {
             <tr id="tr_${item.id}">
                 <td>${item.id}</td>
                 <td>
-                    <img src="${AppBase.CLOUDINARY_URL + '/' + item.fileFolder + '/' + item.fileName}" alt="" />
+                    <img src="${AppBase.CLOUDINARY_URL + '/' + this.CLOUDINARY_SCALE_120_100 + '/' + item.fileFolder + '/' + item.fileName}" alt="" />
                 </td>
                 <td>${item.title}</td>
                 <td>${item.price}</td>
@@ -172,6 +173,21 @@ class AppBase {
                     </a>
                 </td>
             </tr>
+        `;
+    }
+
+    static renderProductShopping(item) {
+        return `
+            <div class="card fl mgr-10" style="width: 288px; height: 356px">
+                <div style="width: 280px; height: 200px">
+                    <img src="${AppBase.CLOUDINARY_URL + '/' + this.CLOUDINARY_SCALE_280_200 + '/' + item.fileFolder + '/' + item.fileName}" class="card-img-top" alt="...">
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">${item.title}</h5>
+                    <p class="card-text">${item.price}</p>
+                    <a href="#" class="btn btn-primary">Add to cart</a>
+                </div>
+            </div>
         `;
     }
 }

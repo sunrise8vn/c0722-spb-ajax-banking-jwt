@@ -66,7 +66,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/api/auth/login",
                         "/api/auth/register",
                         "/login",
-                        "/logout"
+                        "/logout",
+                        "/products"
                 ).permitAll()
                 .antMatchers("/histories").hasAnyAuthority("ADMIN")
                 .antMatchers("/resources/**", "/assets/**").permitAll()
@@ -86,7 +87,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .logout()
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/login")
+                .logoutSuccessUrl("/products")
                 .deleteCookies("JWT")
                 .invalidateHttpSession(true)
                 ;

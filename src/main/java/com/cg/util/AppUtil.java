@@ -42,4 +42,17 @@ public class AppUtil {
 
         return userName;
     }
+
+    public String getPrincipalEmail() {
+        String email;
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof UserDetails) {
+            email = ((UserDetails) principal).getUsername();
+        } else {
+            email = principal.toString();
+        }
+
+        return email;
+    }
 }

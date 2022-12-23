@@ -82,14 +82,15 @@
 <th:block th:replace="/layout/script :: script" />
 
 <script type="text/javascript" src="/assets/js/app.base.js"></script>
-<script type="text/javascript" src="/assets/js/custom-validation.js"></script>
+<!--<script type="text/javascript" src="/assets/js/custom-validation.js"></script>-->
 
 
 <script>
 
   const page = {
     urls: {
-      getAllProducts: AppBase.API_PRODUCT
+      getAllProducts: AppBase.API_PRODUCT,
+      saveNewProduct: AppBase.API_PRODUCT
     },
     elements: {},
     commands: {},
@@ -104,6 +105,24 @@
   page.elements.tbProductBody = $('#tbListProducts tbody');
 
   page.dialogs.elements.modalCreateProduct = $('#modalCreateProduct');
+
+  page.dialogs.elements.wrapper = $("section .wrapper");
+  page.dialogs.elements.productTitle = $("#productTitle");
+  page.dialogs.elements.productPrice = $("#productPrice");
+  page.dialogs.elements.productDesc = $("#description");
+
+  page.dialogs.elements.wrapperContent = $("section .wrapper .content");
+  page.dialogs.elements.imagePreview = $("#modalCreateProduct section .image-preview canvas");
+  page.dialogs.elements.imagePreview.css("display", "none");
+  page.dialogs.elements.canvas = $("#canvas");
+  page.dialogs.elements.context = page.dialogs.elements.canvas[0].getContext('2d');
+
+  page.dialogs.elements.divImagePreview = $("div.image-preview, div.file-name");
+  page.dialogs.elements.imageFile = $("#imageFile");
+  page.dialogs.elements.btnClearImagePreview = $(".clear-image-preview i");
+
+  page.dialogs.elements.btnCreateProduct = $("#btnCreateProduct");
+
 
   page.commands.getAllProducts = () => {
     $.ajax({
@@ -121,12 +140,94 @@
       })
   }
 
-
   page.commands.handleShowCreateModal = () => {
     page.elements.btnShowCreateModal.on('click', () => {
       page.dialogs.elements.modalCreateProduct.modal('show');
     })
   }
+
+  page.dialogs.commands.handleShowImageInputDialog = () => {
+    page.dialogs.elements.divImagePreview.on("click", function () {
+      page.dialogs.elements.imageFile.trigger("click");
+    });
+  }
+
+  page.dialogs.commands.loadImageToCanvas = (imageFile) => {
+    page.dialogs.elements.imagePreview.css("display", "");
+    page.dialogs.elements.wrapper.addClass("active");
+    page.dialogs.elements.wrapperContent.css("opacity", 0);
+
+    let imageObj = new Image();
+
+    imageObj.onload = function () {
+      page.dialogs.elements.context.canvas.width = imageObj.width;
+      page.dialogs.elements.context.canvas.height = imageObj.height;
+      page.dialogs.elements.context.drawImage(imageObj, 0, 0, imageObj.width, imageObj.height);
+    };
+
+    imageObj.src = URL.createObjectURL(imageFile)
+  }
+
+  page.dialogs.commands.changeImagePreview = () => {
+    let imageFile = page.dialogs.elements.imageFile[0].files[0];
+
+    if (imageFile) {
+      let reader = new FileReader();
+
+      reader.readAsDataURL(imageFile);
+
+      reader.onload = function(e){
+        if (e.target.readyState === FileReader.DONE) {
+          page.dialogs.commands.loadImageToCanvas(imageFile);
+        }
+      }
+    } else {
+      page.dialogs.elements.clearImagePreview();
+    }
+  }
+
+  page.dialogs.elements.clearImagePreview = () => {
+    page.dialogs.elements.imageFile.val("");
+    page.dialogs.elements.imagePreview.css("display", "none");
+    page.dialogs.elements.wrapper.removeClass("active");
+    page.dialogs.elements.wrapperContent.css("opacity", 1);
+  }
+
+  page.dialogs.commands.createProduct = () => {
+    let formData = new FormData();
+    formData.append("title", page.dialogs.elements.productTitle.val());
+    formData.append("price", page.dialogs.elements.productPrice.val());
+    formData.append("description", page.dialogs.elements.productDesc.val());
+    formData.append("file", page.dialogs.elements.imageFile[0].files[0]);
+
+    page.dialogs.elements.btnCreateProduct.prop("disabled", true);
+
+    $.ajax({
+      type: "POST",
+      contentType: false,
+      cache: false,
+      processData: false,
+      url: page.urls.saveNewProduct,
+      data: formData
+    }).done((data) => {
+
+      let str = AppBase.renderProduct(data);
+      page.elements.tbProductBody.prepend(str);
+
+      AppBase.showSuccessAlert(AppBase.AlertMessageEn.SUCCESS_CREATED);
+
+      page.dialogs.elements.modalCreateProduct.modal('hide');
+
+    }).fail((err) => {
+      AppBase.showErrorAlert(AppBase.AlertMessageEn.ERROR_400);
+    }).always(function () {
+      page.dialogs.elements.btnCreateProduct.prop("disabled", false);
+    });
+  }
+
+  page.dialogs.elements.btnCreateProduct.on("click", () => {
+    page.dialogs.commands.createProduct();
+  })
 
   page.commands.loadData = () => {
     page.commands.getAllProducts();
@@ -143,6 +244,17 @@
     });
 
     page.commands.handleShowCreateModal();
+
+    page.dialogs.commands.handleShowImageInputDialog();
+
+
+    page.dialogs.elements.imageFile.on("change", function () {
+      page.dialogs.commands.changeImagePreview();
+    });
+
+    page.dialogs.elements.btnClearImagePreview.on("click", function () {
+      page.dialogs.elements.clearImagePreview();
+    });
 
   }
 
